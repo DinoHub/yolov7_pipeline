@@ -1,38 +1,212 @@
-# YOLOv7 package
+# YOLOv7 Package with RealSense
 
-## Adapted/Forked from [WongKinYiu's repo](https://github.com/WongKinYiu/yolov7)
+## Adapted/Forked from WongKinYiu's Repository
 
-Last "merge" date: 7th Sept 2022
+- Repository Link: https://github.com/WongKinYiu/yolov7
+- Last "merge" date: 7th Sept 2022
 
-## Changes from original repo
+### Updates to the Repository
 
-- YOLOv7 can be used as a package, with minimal requirements for inference only
+The following changes have been made to the original repository:
 
-## Using YOLOv7 as a package for inference
+- YOLOv7 Modification:
+    - YOLOv7 has been modified to function as a **package** solely for inference purposes.
+    - Modifications were made to the `inference` branch to enable compatibility with **RealSense cameras**.
 
-- clone YOLOv7 repository (need not be in same folder as main project) and checkout `inference` branch
-- download desired weights using arguments to bash script
-```
-cd yolov7/weights
-./get_weights.sh yolov7 yolov7-e6
-```
-- make sure the requirements for YOLOv7 are installed
-- in the main project folder, install YOLOv7 as a package (takes some time to build)
-```
-python3 -m pip install --no-cache-dir /path/to/yolov7
-```
-OR as an editable package (if you need to make changes to the code, faster to build)
-```
-python3 -m pip install -e /path/to/yolov7
-```
-- import the YOLOv7 wrapper class for inference (refer to `scripts/inference.py` for example usage)
-```
-from yolov7.yolov7 import YOLOv7
-```
+- ARM Processor Support:
+    - This repository is **compatible with ARM processors**, allowing users to run the inference process on these devices.
 
-## TODO
+## Table of Contents
+- [1. Running on NVIDIA Jetson Xavier](#1-running-on-nvidia-jetson-xavier)
+- [Setup on a New Xavier](#setup-on-a-new-xavier)
+    - [Requirements](#requirements)
+    - [Setup Instructions](#setup-instructions)
+- [Running a Live YOLOv7 Inference Script with a RealSense Camera](#running-a-live-yolov7-inference-script-with-a-realsense-camera)
+- [Official YOLOv7](#official-yolov7)
 
-- [x] figure out memory leak issue
+## 1. Running on NVIDIA Jetson Xavier
+
+### Setup on a New Xavier
+
+This program should work on ARM processors in general but has only been tested on the NVIDIA Jetson Xavier.
+
+#### Requirements
+- Ubuntu OS
+- External hard disk with Linux File System (eg. ext4) for extra storage 
+- RealSense Camera
+
+#### Setup Instructions
+
+Please execute the following instructions in order when setting up a new NVIDIA Jetson Xavier.
+
+1. **Flash Ubuntu**
+
+    Follow this guide to download and flash the Xavier to the latest Jetpack version: [Jetson Xavier AGX Driver Installation](https://wiki.seeedstudio.com/Jetson_Xavier_AGX_H01_Driver_Installation/)
+
+1. **Date & Time Adustment (if applicable)**
+
+    In the event that the date and time on the NVIDIA Jetson Xavier device are inaccurate, please make sure to adjust them each time the device is rebooted. Otherwise, there may be complications during program installation and execution.
+
+1. **External Disk Automount Configuration**
+
+    Automount the SSD/HDD/SD card onto `/mnt/rootfs`. Ensure that the disk is of Linux File System type.
+
+    1. Identify the **UUID** and **file system type** of your drive by executing the following command:
+        ```bash
+        sudo blkid
+        ```
+
+    1. Create a mount point for your drive under the `/mnt` directory. In this example, we will use `/mnt/rootfs`.
+        ```bash
+        sudo mkdir /mnt/rootfs
+        ```
+
+    1. Append the following line to the `/etc/fstab` file using your preferred text editor:
+        ```
+        UUID=<uuid-of-your-drive>  <mount-point>  <file-system-type>  <mount-option>  <dump>  <pass>
+        ```
+        For example,
+        ```bash
+        UUID=eb67c479-962f-4bcc-b3fe-cefaf908f01e  /mnt/rootfs  ext4  defaults  0  2
+        ```
+
+    1. Verify the automount configuration by executing the following command:
+        ```bash
+        sudo mount -a
+        ```
+
+    For additional information and details, please refer to the following [link](https://www.linuxbabe.com/desktop-linux/how-to-automount-file-systems-on-linux).
+
+1. **Docker Installation**
+
+    Before proceeding with the installation of Docker, ensure that no other versions of Docker are currently installed. If any are found, please **uninstall** them prior to continuing. 
+    1. Download and install Docker for ARM using the following commands:
+        ```bash
+        sudo apt-get update
+        sudo apt-get upgrade
+        curl -fsSL test.docker.com -o get-docker.sh && sh get-docker.sh
+        sudo usermod -aG docker $USER 
+        ```
+
+    1. Log out of the system and then log back in to apply the group membership changes. Verify the successful installation of Docker by running the following command:
+        ```bash
+        docker run hello-world 
+        ```
+    For more detailed information and instructions, please refer to the following [link](https://www.docker.com/blog/getting-started-with-docker-for-arm-on-linux/)
+
+1. **NVIDIA Container Toolkit Installation (for GPU Usage)**
+
+    1. To install the NVIDIA Container Toolkit on the NVIDIA Jetson Xavier, execute the following commands:
+        ```bash
+        distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+        curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+        curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+        sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+        sudo apt install -y nvidia-docker2
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker
+        ```
+    
+    Note: When prompted to allow changes to `/etc/docker/daemon.json` during installation, accept the changes.
+    For more detailed information and instructions, please refer to the following [link](https://dev.to/caelinsutch/running-docker-containers-for-the-nvidia-jetson-nano-5a06)
+
+1. **Relocating Docker Storage (if required) - Insufficient Storage Capacity**
+
+    Due to the limited storage capacity of the NVIDIA Jetson Xavier (16GB), it may become necessary to relocate Docker's storage location to an external hard disk. Follow the steps below:
+
+    1. Stop the Docker daemon
+        ```bash
+        sudo service docker stop
+        ```
+    1. Open the `/etc/docker/daemon.json` file using a text editor and add the following JSON configuration:
+        ```json
+        {
+            "data-root": "/path/to/your/docker"
+        }
+        ```
+        Replace `/path/to/your/docker` with the desired path on the external hard disk.
+
+    1. Create a new directory on the external hard disk to store Docker's data and transfer the data over. For instance, we will use the directory `/mnt/rootfs/docker`.
+        ```bash
+        sudo mkdir /mnt/rootfs/docker
+        sudo rsync -aP /var/lib/docker/ /mnt/rootfs/docker
+        sudo mv /var/lib/docker /var/lib/docker.old
+        sudo service docker start
+        ```
+
+    For more detailed information and instructions, please refer to the following [link](https://www.guguweb.com/2019/02/07/how-to-move-docker-data-directory-to-another-location-on-ubuntu/).
+
+1. **Obtaining the Symlink for the Video Device**
+
+    1. To identify the symlink of your video device, execute the following command:
+        ```bash
+        sudo udevadm info --query=all --name=/dev/video1
+        ```
+    Take note of the v4l `by-id` symlink information provided. 
+    Update the video device symlink accordingly in `run_docker.sh` to ensure proper device mapping and usage.
+
+### Running a Live YOLOv7 Inference Script with a RealSense Camera
+
+This guide provides instructions on running a live YOLOv7 inference script using a RealSense camera. Follow the steps below to set up and run the program.
+
+#### Running the Program
+Follow the steps below to run a live YOLOv7 inference script using a RealSense camera:
+
+1. Clone this repository and switch to the `realsense` branch
+1. **Option 1: Build the Docker image:** Execute the following command to build the Docker image:
+    ```
+    docker build -f Dockerfile.xav -t yolov7-realsense-arm .
+    ```
+    **Option 2: Pull the Docker image from Docker Hub:** Run the following command to pull the pre-built Docker image:
+    ```
+    docker pull tehwenyi/yolov7-realsense-arm:latest
+    ```
+1. Create and enter the Docker container using the provided script:
+    ```
+    bash run_xav_docker.sh
+    ```
+1. Import the wrapper classes for YOLOv7 and pyrealsense2 for inference, or use the provided scripts for inference with the RealSense camera:
+    1. Import the classes manually in your script:
+        ```
+        import pyrealsense2 as rs
+        from yolov7.yolov7 import YOLOv7
+        ```
+    1. Alternatively, you can use the provided inference scripts for working with the RealSense camera:
+    - `scripts/inference_pyrs.py`:
+      - This script utilizes the pyrealsense2 library to access the images in the video stream.
+      - Refer to the code itself or scripts/run_inference_pyrs.sh for information about available parameters.
+    - `scripts/inference_ros.py`:
+      - This script uses the ros library to access the images in the video stream.
+      - Refer to the code itself or scripts/run_inference_ros.sh for information about available parameters.
+    - Running the code:
+      1. Edit the parameters in the bash scripts as needed.
+      1. Navigate to the `scripts` directory
+      1. Execute the desired script:
+          ```
+          cd scripts
+          bash run_inference_pyrs.sh
+          ```
+          ```
+          cd scripts
+          bash run_inference_ros.sh
+          ```
+    Feel free to customize the parameters and scripts to fit your specific use case.
+
+Notes: 
+- If the RealSense camera is not functioning, ensure that it is connected to a USB 3.0 port rather than a USB 2.0 port.
+- If you encounter any issues, consider checking the device configuration in the `./run_docker` script if you are not using the RealSense D455 camera.
+- For debugging purposes, you can download and use the [realsense-viewer application](https://dev.intelrealsense.com/docs/nvidia-jetson-tx2-installation).
+
+
+#### Camera Configuration
+
+The camera configuration, including fps, width, and height, may vary for each RealSense camera. In our tests, we used the **RealSense camera D455** on the NVIDIA Jetson Xavier, which runs at a maximum of:
+
+- 1280x720: ~6fps (use 5fps)
+- 640x480: ~8fps (use 5fps)
+
+To determine the appropriate configuration for your camera, you can run a test using `xavier/bash_run_inference.sh` with your desired width and height parameters. Take note of the **fps** value printed out during the test. It is important to use this fps value as the input for both your desired width and height parameters when running the inference script. Failure to provide the correct fps will result in the saved videos (inference, raw) being fast-forwarded or slowed down.
 
 # Official YOLOv7
 
