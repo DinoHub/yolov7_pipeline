@@ -2,7 +2,7 @@ import rospy
 import numpy as np
 
 from sensor_msgs.msg import Image
-from cv_bridge import CvBridge, CvBridgeError
+# from cv_bridge import CvBridge, CvBridgeError
 
 class Subscriber():
   """
@@ -34,11 +34,6 @@ class Subscriber():
     Args:
         ros_topic (str): ROS topic name to subscribe to.
     """
-    rospy.init_node('cv_sub', anonymous=True)
-
-    self.bridge = CvBridge()
-    self._img_sub = rospy.Subscriber(ros_topic, Image, self._img_callback)
-
     self.width = None
     self.height = None
     self.encoding = None
@@ -46,6 +41,10 @@ class Subscriber():
     self.color_img = None
     self.timestamp = None
     self.frame_id = None
+
+    # self.bridge = CvBridge()
+    self._img_sub = rospy.Subscriber(ros_topic, Image, self._img_callback)
+
   
   def _img_callback(self, data):
     """
@@ -57,19 +56,19 @@ class Subscriber():
         data (sensor_msgs.msg.Image): The incoming ROS image message.
     """
     try:
-      color_img = self.bridge.imgmsg_to_cv2(data, "bgr8")
-      self.color_img = color_img
+      # color_img = self.bridge.imgmsg_to_cv2(data, "bgr8")
+      # self.color_img = color_img
       
       self.width = data.width
       self.height = data.height
       self.encoding = data.encoding
       self.step = data.step
 
-      # img_data = np.frombuffer(data.data, dtype=np.uint8)
-      # self.color_img = img_data.reshape((self.height, self.width, -1))
+      img_data = np.frombuffer(data.data, dtype=np.uint8)
+      self.color_img = img_data.reshape((self.height, self.width, -1))
       self.timestamp = data.header.stamp
       self.frame_id = data.header.frame_id
-    except CvBridgeError as e:
+    except Exception as e:
       print(e)
 
   def get_frame_info(self):

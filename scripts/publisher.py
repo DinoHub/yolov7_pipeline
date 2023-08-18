@@ -43,8 +43,6 @@ class Publisher():
     Args:
         msg_formats_list (list): List of message formats to publish.
     """
-    rospy.init_node('cv', anonymous=True)
-
     ros_topics = self.get_ros_topics()
     
     self._publishers = {}
