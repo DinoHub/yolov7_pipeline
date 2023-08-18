@@ -3,11 +3,16 @@ from pathlib import Path
 import cv2
 import numpy as np
 import time
+import signal
+import os
 
 import pyrealsense2 as rs
 from yolov7.yolov7 import YOLOv7
 
 from publisher import Publisher
+import rospy
+
+terminate = False
 
 def create_output_video_writer(task_type, output_folder, fps, width, height):
   try:
@@ -15,13 +20,14 @@ def create_output_video_writer(task_type, output_folder, fps, width, height):
     current_datetime = time.strftime("%Y%m%d_%Hh%Mm%Ss")
     output_filepath = output_folder / (current_datetime + "_" + task_type + '.avi')
     output_filepath.parent.mkdir(parents=True, exist_ok=True)
+    os.chmod(str(output_filepath.parent), 0o777)
     
     # Create a video writer object
     # video_writer = cv2.VideoWriter(str(output_filepath), cv2.VideoWriter_fourcc(*'h264'), float(fps), (width, height))
     video_writer = cv2.VideoWriter(str(output_filepath), cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), fps, (width, height))
-    
+    print(f"Created {task_type} video at {output_folder}")
   except Exception as e:
-    print(f"ERROR: Failed to create video file in the specified {task_type} videos' folder ({args.output_folder})")
+    print(f"ERROR: Failed to create video file in the specified {task_type} videos' folder ({output_folder})")
     raise e
 
   return video_writer
@@ -39,7 +45,13 @@ def yuyv_to_bgr(color_frame):
 
   return bgr
 
+def signal_handler(sig, frame):
+    global terminate
+    print("\nKeyboardInterrupt detected. Stopping program...")
+    terminate = True
+
 def main(args):
+  signal.signal(signal.SIGINT, signal_handler)
   # Check if weights file exists
   if not args.weights.is_file():
     raise FileNotFoundError(f"Unable to find weights file: {args.weights}")
@@ -90,8 +102,8 @@ def main(args):
   if args.inference_folder:
     inf_video_writer = create_output_video_writer('inference', args.inference_folder, args.fps, args.width, args.height)
   if args.raw_video_folder:
-    raw_video_writer = create_output_video_writer('raw', args.raw_video_folder, args.fps, args.width, args.height)
-      
+    raw_video_writer = create_output_video_writer('raw', args.raw_video_folder, args.fps, args.width, args.height)   
+
   # Init publisher
   publishers_list = []
   if args.publish_bbox:
@@ -101,7 +113,9 @@ def main(args):
     publishers_list.append('cam_info')
   if args.publish_img_chip:
     publishers_list.append('chip')
-  pub = Publisher(publishers_list)
+  if args.publish_bbox or args.publish_depth_params or args.publish_img_chip:
+    rospy.init_node('cv', anonymous=True)
+    pub = Publisher(publishers_list)
 
   # Start streaming
   pipeline.start(config)
@@ -113,7 +127,7 @@ def main(args):
     x = 5 # displays the frame rate every 5 seconds
     counter = 0
 
-    while True:
+    while not terminate:
       # Wait for coherent frames
       frames = pipeline.wait_for_frames()
       color_frame = frames.get_color_frame()
@@ -124,6 +138,8 @@ def main(args):
       frame = np.asanyarray(color_frame.get_data())
       # frame = yuyv_to_bgr(color_frame)
 
+      if args.raw_video_folder:
+        raw_video_writer.write(frame)
       # Perform object detection using YOLOv7
       dets = yolov7.detect_get_box_in([frame], box_format='ltrb', classes=None)[0]
       
@@ -150,8 +166,8 @@ def main(args):
         cv2.putText(show_frame, f'{clsname}:{conf:0.2f}', (l, t-8), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0))
 
       # Write videos
-      if args.raw_video_folder: raw_video_writer.write(frame)
-      if args.inference_folder: inf_video_writer.write(show_frame)
+      if args.inference_folder:
+        inf_video_writer.write(show_frame)
 
       # Calculate and display FPS
       counter += 1
@@ -172,9 +188,14 @@ def main(args):
 
   finally:
     # Clean up
+    print("Cleaning up...")
     if args.display: cv2.destroyAllWindows()
-    if args.raw_video_folder: raw_video_writer.release()
-    if args.inference_folder: inf_video_writer.release()
+    if args.raw_video_folder:
+      raw_video_writer.release()
+      print("Released raw video writer")
+    if args.inference_folder:
+      inf_video_writer.release()
+      print("Released inference video writer")
     # Stop streaming
     pipeline.stop()
 

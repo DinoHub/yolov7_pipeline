@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import time
+import os
 
 from yolov7.yolov7 import YOLOv7
 
@@ -10,12 +11,15 @@ import rospy
 from subscriber import Subscriber
 from publisher import Publisher
 
+terminate = False
+
 def create_output_video_writer(task_type, output_folder, fps, width, height):
   try:
     # Create a unique filename based on current datetime and task type
     current_datetime = time.strftime("%Y%m%d_%Hh%Mm%Ss")
     output_filepath = output_folder / (current_datetime + "_" + task_type + '.avi')
     output_filepath.parent.mkdir(parents=True, exist_ok=True)
+    os.chmod(str(output_filepath.parent), 0o777)
     
     # Create a video writer object
     # video_writer = cv2.VideoWriter(str(output_filepath), cv2.VideoWriter_fourcc(*'h264'), float(fps), (width, height))
@@ -26,6 +30,11 @@ def create_output_video_writer(task_type, output_folder, fps, width, height):
     raise e
 
   return video_writer
+
+def signal_handler(sig, frame):
+    global terminate
+    print("\nCtrl+C detected. Stopping program...")
+    terminate = True
 
 def main(args):
   # Check if weights file exists
@@ -61,6 +70,7 @@ def main(args):
     publishers_list.append('cam_info')
   if args.publish_img_chip:
     publishers_list.append('chip')
+  rospy.init_node('cv', anonymous=True)
   pub = Publisher(publishers_list)
   
   # Init subscriber
@@ -69,19 +79,19 @@ def main(args):
   rate = rospy.Rate(args.fps)
   frame_interval = 1.0 / args.fps
 
-  print(f"Starting stream, press q to exit if display is on. Otherwise, Ctrl+C.")
 
   # To track FPS
   start_time = time.time()
   x = 5 # displays the frame rate every 5 seconds
   counter = 0
 
+  print(f"Starting stream, press q to exit if display is on. Otherwise, Ctrl+C.")
   try:
-    while not rospy.is_shutdown():
+    while not terminate and not rospy.is_shutdown():
       # Wait for coherent frames
       frame_info = sub.get_frame_info()
       frame = frame_info['img']
-      if not frame:
+      if frame is None:
         continue
       
       if counter == 0:
@@ -136,6 +146,7 @@ def main(args):
         if cv2.waitKey(1) & 0xFF == ord('q'):
           break
         
+      print("test")
       rate.sleep()
       rospy.sleep(frame_interval) # Sleep to maintain the desired frame rate
   
