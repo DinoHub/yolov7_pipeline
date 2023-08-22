@@ -77,7 +77,7 @@ def main(args):
   sub = Subscriber("/camera/color/image_raw") # Dk put topic here or inside better
 
   rate = rospy.Rate(args.fps)
-  frame_interval = 1.0 / args.fps
+  # frame_interval = 1.0 / args.fps
 
   # To track FPS
   start_time = time.time()
@@ -149,7 +149,7 @@ def main(args):
           break
 
       rate.sleep()
-      rospy.sleep(frame_interval) # Sleep to maintain the desired frame rate
+      # rospy.sleep(frame_interval) # Sleep to maintain the desired frame rate
   
   except KeyboardInterrupt:
     print("KeyBoardInterrupt: Stopping program...")
