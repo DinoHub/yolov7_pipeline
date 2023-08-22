@@ -79,11 +79,11 @@ def main(args):
   rate = rospy.Rate(args.fps)
   frame_interval = 1.0 / args.fps
 
-
   # To track FPS
   start_time = time.time()
   x = 5 # displays the frame rate every 5 seconds
   counter = 0
+  first_successful_frame = True
 
   print(f"Starting stream, press q to exit if display is on. Otherwise, Ctrl+C.")
   try:
@@ -94,13 +94,15 @@ def main(args):
       if frame is None:
         continue
       
-      if counter == 0:
+      if first_successful_frame:
         vid_width = frame_info['width']
         vid_height = frame_info['height']
         if args.inference_folder:
           inf_video_writer = create_output_video_writer('inference', args.inference_folder, args.fps, vid_width, vid_height)
         if args.raw_video_folder:
           raw_video_writer = create_output_video_writer('raw', args.raw_video_folder, args.fps, vid_width, vid_height)
+        
+        first_successful_frame = False
 
       # Perform object detection using YOLOv7
       dets = yolov7.detect_get_box_in([frame], box_format='ltrb', classes=None)[0]
@@ -145,8 +147,7 @@ def main(args):
         cv2.imshow('RealSense YOLOv7', show_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
           break
-        
-      print("test")
+
       rate.sleep()
       rospy.sleep(frame_interval) # Sleep to maintain the desired frame rate
   
