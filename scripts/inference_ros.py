@@ -93,6 +93,7 @@ def main(args):
       frame = frame_info['img']
       if frame is None:
         continue
+      frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
       
       if first_successful_frame:
         vid_width = frame_info['width']
