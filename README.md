@@ -148,20 +148,20 @@ Please execute the following instructions in order when setting up a new NVIDIA 
 
 1. **Installing `tmux` (if required)**
 
-Tmux is a terminal multiplexer that allows you to create and manage multiple terminal sessions within a single window. It's particularly useful for projects where you need to detach your terminal session and reattach it later, so your session will continue running while your  SSH connection is intermittent or disconnected. With tmux, you can keep processes running in the background and re-access them whenever needed.
+    Tmux is a terminal multiplexer that allows you to create and manage multiple terminal sessions within a single window. It's particularly useful for projects where you need to detach your terminal session and reattach it later, so your session will continue running while your  SSH connection is intermittent or disconnected. With tmux, you can keep processes running in the background and re-access them whenever needed.
 
-To install tmux, execute the following command:
-```
-sudo apt install tmux
-```
+    To install tmux, execute the following command:
+    ```
+    sudo apt install tmux
+    ```
 
-To run `tmux`, execute the following command:
-```
-tmux
-```
-You can then run your code in `tmux` and detach and reattach wherever necessary.
+    To run `tmux`, execute the following command:
+    ```
+    tmux
+    ```
+    You can then run your code in `tmux` and detach and reattach wherever necessary.
 
-For more information on the `tmux` installation and its commands, please refer to this [link](https://linuxize.com/post/getting-started-with-tmux/#google_vignette).
+    For more information on the `tmux` installation and its commands, please refer to this [link](https://linuxize.com/post/getting-started-with-tmux/#google_vignette).
 
 ## Quick Start (Running a YOLOv7 Inference with RealSense Camera)
 
@@ -283,10 +283,6 @@ To change any of the topics, edit Line 30 in `publisher.py` directly. Note that 
 Used by `inference_ros.py`. The default topic is `/camera/color/image_raw`, edit Line 77 of `inference_ros.py` to change the subscription topic.
 
 ## Others (for XFS)
-
-### `tmux`
-
-
 
 ### For testing purposes
 
