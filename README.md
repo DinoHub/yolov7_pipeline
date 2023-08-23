@@ -10,6 +10,7 @@
     1. [Option 1: Using `rospy`](#option-1-using-rospy)
     2. [Option 2: Using `pyrealsense2` Wrapper](#option-2-using-pyrealsense2-wrapper)
 4. [Scripts](#scripts)
+4. [Others (For XFS)](#others-for-xfs)
 
 ## Overview
 
@@ -282,7 +283,7 @@ To change any of the topics, edit Line 30 in `publisher.py` directly. Note that 
 
 Used by `inference_ros.py`. The default topic is `/camera/color/image_raw`, edit Line 77 of `inference_ros.py` to change the subscription topic.
 
-## Others (for XFS)
+## Others (For XFS)
 
 ### For testing purposes
 
