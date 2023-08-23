@@ -292,7 +292,7 @@ Used by `inference_ros.py`. The default topic is `/camera/color/image_raw`, edit
 - Creating the `roscore`
     ```
     export ROS_MASTER_URI=http://192.168.168.105:11311
-    ROS_IP=192.168.168.102
+    export ROS_IP=192.168.168.102
     export ROS_DOMAIN_ID=123
     export CYCLONEDDS_URI="<CycloneDDS><Domain><General><NetworkInterfaceAddress>$(ifconfig | awk '/192.168.168.102/ {print a}{a = $0}' | awk '{print $1}' | sed 's/.$//')</></></></>"
 
@@ -303,7 +303,7 @@ Used by `inference_ros.py`. The default topic is `/camera/color/image_raw`, edit
 - Starting up the FRAMOS RealSense Cameras:
     ```
     export ROS_MASTER_URI=http://192.168.168.105:11311
-    ROS_IP=192.168.168.102
+    export ROS_IP=192.168.168.102
     export ROS_DOMAIN_ID=123
     export CYCLONEDDS_URI="<CycloneDDS><Domain><General><NetworkInterfaceAddress>$(ifconfig | awk '/192.168.168.102/ {print a}{a = $0}' | awk '{print $1}' | sed 's/.$//')</></></></>"
 
