@@ -35,7 +35,7 @@ The following changes have been made to the original repository:
 This program should work on ARM processors in general but has only been tested on the NVIDIA Jetson Xavier.
 
 ### Prerequisites
-- Ubuntu OS
+- Ubuntu OS (Jetpack version 5.0.2 or later)
 - RealSense Camera
 - For Jetson Xavier: External hard disk with Linux File System (eg. ext4) for extra storage
 
