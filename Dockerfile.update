@@ -1,0 +1,11 @@
+FROM yolov7_realsense:ver0.2_ros1
+
+ENV ROS_MASTER_URI=http://192.168.168.101:11311
+ENV ROS_IP=192.168.168.102
+ENV ROS_DOMAIN_ID=123
+ENV CYCLONEDDS_URI="<CycloneDDS><Domain><General><NetworkInterfaceAddress>$(ifconfig | awk '/192.168.168.102/ {print a}{a = $0}' | awk '{print $1}' | sed 's/.$//')</></></></>"
+
+RUN apt-get update && \
+  apt-get install --no-install-recommends -y \
+  vim nano gedit \
+  iputils-ping net-tools
