@@ -67,7 +67,7 @@ class ConvertCOCOToYOLO:
         h /= img_height
         return (xc, yc, w, h)
 
-    def convert(self,annotation_key='annotations',imgs_key='images',img_id='image_id',cat_id='category_id',bbox='bbox'):
+    def convert(self,imgs_key='images',annotation_key='annotations',ann_img_id_key='image_id',ann_cat_id_key='category_id',bbox='bbox'):
         # Enter directory to read JSON file
         data = json.load(open(self.json_path))
 
@@ -75,16 +75,16 @@ class ConvertCOCOToYOLO:
         img_mappings = {}
         img_dimensions = {}
         for img in data[imgs_key]:
-          img_mappings[img[img_id]] = img["filename"]
-          img_dimensions[img[img_id]] = (img["width"], img["height"])
+          img_mappings[img["id"]] = img["file_name"]
+          img_dimensions[img["id"]] = (img["width"], img["height"])
 
         # Retrieve data
         for i in range(len(data[annotation_key])):
 
             # Get required data
-            image_id = data[annotation_key][i][img_id]
+            image_id = data[annotation_key][i][ann_img_id_key]
             image_filename = img_mappings[image_id]
-            category_id = f'{data[annotation_key][i][cat_id]}'
+            category_id = f'{data[annotation_key][i][ann_cat_id_key]}'
             bbox = data[annotation_key][i]['bbox']
 
             # Convert the data
