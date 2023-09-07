@@ -1,5 +1,12 @@
 # Helper Functions
 
+## Table of Contents
+
+- [Dataset Functions](#dataset-functions)
+  - [Combining Datasets](#combining-datasets)
+  - [Converting Datasets with Different Annotation Formats](#converting-datasets-with-different-annotation-formats)
+  - [Visualising YOLO Datasets](#visualising-yolo-datasets)
+
 ## Dataset Functions
 ### Combining Datasets
 Combines datasets of the same annotation format together
