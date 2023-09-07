@@ -4,7 +4,6 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
 
 # Table of Contents
 - [YOLOv7 Pipeline (Main Branch)](#yolov7-pipeline-main-branch)
-  - [Adapted/Forked from WongKinYiu's Repository](#adaptedforked-from-wongkinyius-repository)
   - [Additional Functionalities](#additional-functionalities)
     - [Conversion of Weights (for Inference Branch)](#conversion-of-weights-for-inference-branch)
     - [Detection + Tracking with DeepSORT](#detection--tracking-with-deepsort)
@@ -13,7 +12,6 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
   - [Notes](#notes)
     - [Training](#training)
 - [Official YOLOv7](#official-yolov7)
-  - [Web Demo](#web-demo)
   - [Performance](#performance)
   - [Installation](#installation)
   - [Testing](#testing)
@@ -233,10 +231,6 @@ python train.py --workers 8 --device 0 --batch-size 32 --data data/custom.yaml -
 # finetune p6 models
 python train_aux.py --workers 8 --device 0 --batch-size 16 --data data/custom.yaml --img 1280 1280 --cfg cfg/training/yolov7-w6-custom.yaml --weights 'yolov7-w6_training.pt' --name yolov7-w6-custom --hyp data/hyp.scratch.custom.yaml
 ```
-
-## Re-parameterization
-
-See [reparameterization.ipynb](tools/reparameterization.ipynb)
 
 ## Inference
 
