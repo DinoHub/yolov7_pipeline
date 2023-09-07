@@ -29,11 +29,12 @@ class ConvertCOCOToYOLO:
         
     """
 
-    def __init__(self, img_folder, json_path, output_path):
+    def __init__(self, img_folder, json_path, output_path, remove_empty):
         self.img_folder = img_folder
         self.json_path = json_path
         self.img_output_path = Path(output_path) / "images"
         self.labels_output_path = Path(output_path) / "labels"
+        self.remove_empty = remove_empty
         try:
             shutil.rmtree(str(self.labels_output_path))
             shutil.rmtree(str(self.img_output_path))
@@ -71,50 +72,58 @@ class ConvertCOCOToYOLO:
         # Enter directory to read JSON file
         data = json.load(open(self.json_path))
 
-        check_set = set()
-        img_mappings = {}
-        img_dimensions = {}
+        img_id_to_yolo_annotation = {}
+        img_id_to_filename = {}
+        img_id_to_dimensions = {}
         for img in data[imgs_key]:
-          img_mappings[img["id"]] = img["file_name"]
-          img_dimensions[img["id"]] = (img["width"], img["height"])
+          img_id_to_filename[img["id"]] = img["file_name"]
+          img_id_to_dimensions[img["id"]] = (img["width"], img["height"])
 
-        # Retrieve data
+        # Convert annotations for images with annotations
         for i in range(len(data[annotation_key])):
-
-            # Get required data
             image_id = data[annotation_key][i][ann_img_id_key]
-            image_filename = img_mappings[image_id]
+            image_filename = img_id_to_filename[image_id]
             category_id = f'{data[annotation_key][i][ann_cat_id_key]}'
             bbox = data[annotation_key][i]['bbox']
 
             # Convert the data
             yolo_bbox = (bbox[0], bbox[1], bbox[2], bbox[3])
-            img_width, img_height = img_dimensions[image_id]
+            img_width, img_height = img_id_to_dimensions[image_id]
             normalised_yolo_bbox = self.normalise_bbox(yolo_bbox, float(img_width), float(img_height))
 
             if not normalised_yolo_bbox:
+                print(f"WARNING: There was an issue normalising bbox for an annotation in {image_filename}. Annotation details: {data[annotation_key][i]}")
                 continue
-            
-            # Prepare for export
-            filename = f"{Path(image_filename).stem}.txt"
-            filepath = Path(self.labels_output_path) / filename
             
             content =f"{category_id} {normalised_yolo_bbox[0]} {normalised_yolo_bbox[1]} {normalised_yolo_bbox[2]} {normalised_yolo_bbox[3]}"
 
-            # Export 
-            if image_id in check_set:
-                # Append to existing file as there can be more than one label in each image
-                file = open(filepath, "a")
-                file.write("\n")
-                file.write(content)
-                file.close()
-
-            elif image_id not in check_set:
-                check_set.add(image_id)
-                # Write files
-                file = open(filepath, "w")
-                file.write(content)
-                file.close()
+            if image_id in img_id_to_yolo_annotation:
+                new_content = img_id_to_yolo_annotation[image_id] + "\n" + content
+                img_id_to_yolo_annotation[image_id] = new_content
+            else:
+                img_id_to_yolo_annotation[image_id] = content
+        
+        # Write annotation files for images with annotations
+        for image_id, content in img_id_to_yolo_annotation.items():
+            image_filename = img_id_to_filename[image_id]
+            filename = f"{Path(image_filename).stem}.txt"
+            filepath = Path(self.labels_output_path) / filename
+            
+            with open(filepath, 'w') as output_file:
+                output_file.write(content)
+        
+        # Write annotation files for images with NO annotations
+        if not self.remove_empty:
+            for img in data[imgs_key]:
+                image_id = img["id"]
+                if image_id not in img_id_to_yolo_annotation:
+                    image_filename = img_id_to_filename[image_id]
+                    filename = f"{Path(image_filename).stem}.txt"
+                    filepath = Path(self.labels_output_path) / filename
+                    
+                    # Write empty file
+                    with open(filepath, 'w'):
+                        pass
 
     def copy_images(self):
         img_exts = [".jpg", ".jpeg", ".png"]
@@ -141,11 +150,12 @@ class ConvertCOCOToYOLO:
         self.copy_images()
         print("Success!")
 
-def main(img_folder, json_path, output_path):
+def main(img_folder, json_path, output_path, remove_empty):
     ConvertCOCOToYOLO(
         img_folder=img_folder,
         json_path=json_path,
-        output_path=output_path
+        output_path=output_path,
+        remove_empty=remove_empty
     ).run()
 
 if __name__ == "__main__":
@@ -153,6 +163,8 @@ if __name__ == "__main__":
     parser.add_argument("img_folder", help="Path to the image folder")
     parser.add_argument("json_path", help="Path to the COCO JSON file")
     parser.add_argument("output_path", help="Path to the output folder")
+    parser.add_argument("--remove-empty", action="store_true", default=False, help="Remove images with no annotations in the YOLO format (default: False)")
     args = parser.parse_args()
+    print(args)
 
-    main(args.img_folder, args.json_path, args.output_path)
+    main(args.img_folder, args.json_path, args.output_path, args.remove_empty)
