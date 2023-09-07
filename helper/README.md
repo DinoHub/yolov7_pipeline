@@ -23,13 +23,72 @@ Each image must be of the same size, `640x640` or `1280x1280` are preferred, alt
 - images are smaller than the specified size, `padding.py` can be used.
 
 
-Relevant scripts (COCO to YOLO):
+**Relevant scripts (COCO to YOLO):**
 - `coco_to_yolo.py` / `run_coco_to_yolo.sh`
 - `tiling.py`
 - `split_train_val_test.py`
 
-Relevant scripts(YOLO to COCO)
+**Relevant scripts(YOLO to COCO)**
 - `yolo_to_coco.py`
+
+**COCO Annotation Format:**
+The COCO annotation format will follow the official format on the (COCO Dataset Website)[https://cocodataset.org/#format-data].
+
+<details>
+<summary><b>From the website:</b></summary>
+
+```
+{
+  "info": info, 
+  "images": [image],
+  "annotations": [annotation],
+  "licenses": [license],
+  "categories": [categories]
+}
+
+  info{
+    "year": int,
+    "version": str,
+    "description": str,
+    "contributor": str,
+    "url": str,
+    "date_created": datetime,
+  }
+
+  image{
+    "id": int,
+    "width": int,
+    "height": int,
+    "file_name": str, 
+    "license": int,
+    "flickr_url": str,
+    "coco_url": str,
+    "date_captured": datetime,
+  }
+
+  license{
+    "id": int,
+    "name": str,
+    "url": str,
+  }
+
+  annotation{
+    "id": int,
+    "image_id": int,
+    "category_id": int,
+    "segmentation": RLE or [polygon],
+    "area": float, 
+    "bbox": [x,y,width,height],
+    "iscrowd": 0 or 1,
+  }
+
+  categories[{
+    "id": int, 
+    "name": str, 
+    "supercategory": str,
+    }]
+```
+</details>
 
 ### Visualising YOLO Datasets
 Visualise a YOLO dataset image and its annotations
