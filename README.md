@@ -6,8 +6,8 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
 - [YOLOv7 Pipeline (Main Branch)](#yolov7-pipeline-main-branch)
   - [Additional Functionalities](#additional-functionalities)
     - [Conversion of Weights (for Inference Branch)](#conversion-of-weights-for-inference-branch)
-    - [Detection + Tracking with DeepSORT](#detection--tracking-with-deepsort)
-    - [F-Beta Evaluation](#f-beta-evaluation)
+    - [(Inference) Detection + Tracking with DeepSORT](#inference-detection--tracking-with-deepsort)
+    - [(Testing) F-Beta Evaluation](#testing-f-beta-evaluation)
     - [Helper Scripts](#helper-scripts)
   - [Notes](#notes)
     - [Training](#training)
@@ -46,7 +46,7 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
     ```
     **Note: Ensure you modify the `nc` value in the `yaml` files to match the desired number of classes.**
 
-### Detection + Tracking with DeepSORT
+### (Inference) Detection + Tracking with DeepSORT
 
 Before using the detect_track.py script, it is necessary to install DeepSORT by executing the following command:
 ```bash
@@ -69,7 +69,7 @@ To run the script, follow these instructions:
 
 By executing the provided commands, the script will perform object detection and tracking using DeepSORT, either on a video or an image, depending on your chosen input source.
 
-### F-Beta Evaluation
+### (Testing) F-Beta Evaluation
 
 The `test_fbeta.py` script enhances the functionality of the current `test.py` script by incorporating f-beta evaluation (f1-score, f2-score) and displaying the f-beta results after the YOLOv7 evaluations in `test.py`.
 
