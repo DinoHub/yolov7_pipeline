@@ -1,29 +1,19 @@
-# python yolo_to_coco.py -p /path/to/images -o ./train_coco.json --numerical-img-id False
+# python yolo_to_coco.py -p /path/to/images -o ./train_coco.json --classes "small vehicles" "vehicles" --numerical-img-id True
 from pathlib import Path
 
 import argparse
 import json
 import imagesize
 
-#################################################
-# Change the classes below depending on your own dataset.#
-# Don't change the list name 'Classes'          #
-#################################################
-
-classes = [
-    "vehicle"
-]
-
-# Create the annotations of the ECP dataset (Coco format)
-coco_format = { "categories": [], "images": [{}],"annotations": [{}]}
+coco_format = {"categories": [], "images": [{}],"annotations": [{}]}
 
 def create_image_annotation(file_path: Path, width: int, height: int, image_id: str):
     file_path = file_path.name
     image_annotation = {
         "id": image_id,
+        "file_name": Path(file_path).stem,
         "height": height,
         "width": width,
-        "filename": Path(file_path).stem,
     }
     return image_annotation
 
@@ -34,10 +24,9 @@ def create_annotation_from_yolo_format(min_x, min_y, width, height, image_id, ca
     annotation = {
         "id": annotation_id,
         "image_id": image_id,
+        "category_id": category_id,
         "bbox": bbox,
-        "area": area,
-        "iscrowd": 0,
-        "category_id": category_id
+        "area": area
     }
 
     return annotation
@@ -60,7 +49,6 @@ def get_images_info_and_annotations(opt):
     annotation_id = 0
 
     for file_path in file_paths:
-        # Check how many items have progressed
         print("\rProcessing " + str(image_id) + " ...", end='')
 
         # Build image annotation, known the image's width and height
@@ -138,12 +126,20 @@ def get_args():
       help="Path of the the output json file",
     )
     parser.add_argument(
+      "--classes",
+      nargs='+',
+      default=["small vehicle"],
+      help="List of class names arranged according to the category IDs in the YOLO annotations",
+    )
+    parser.add_argument(
       "--numerical-img-id",
       default=False,
       type=bool,
       help="Whether the image ID should be numerical. If false, image ID will be the filename",
     )
     args = parser.parse_args()
+    
+    print(args)
     return args
 
 
@@ -157,9 +153,8 @@ def main(opt):
         coco_format["annotations"],
     ) = get_images_info_and_annotations(opt)
 
-    for index, label in enumerate(classes):
+    for index, label in enumerate(opt.classes):
         categories = {
-            "supercategory": "NIL",
             "id": index,  # ID starts with '0' .
             "name": label,
         }
