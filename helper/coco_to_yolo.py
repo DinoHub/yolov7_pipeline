@@ -3,11 +3,14 @@
 # Example usage:
 # python coco_to_yolo.py /path/to/images /path/to/annotations.json /path/to/output
 import argparse
-import cv2
 import json
+
+import cv2
 import shutil
 from pathlib import Path
 from glob import glob
+
+from collections import defaultdict
 
 class ConvertCOCOToYOLO:
 
@@ -29,12 +32,13 @@ class ConvertCOCOToYOLO:
         
     """
 
-    def __init__(self, img_folder, json_path, output_path, remove_empty):
+    def __init__(self, img_folder, json_path, output_path, remove_empty, keep_duplicates):
         self.img_folder = img_folder
         self.json_path = json_path
         self.img_output_path = Path(output_path) / "images"
         self.labels_output_path = Path(output_path) / "labels"
         self.remove_empty = remove_empty
+        self.keep_duplicates = keep_duplicates
         try:
             shutil.rmtree(str(self.labels_output_path))
             shutil.rmtree(str(self.img_output_path))
@@ -72,7 +76,8 @@ class ConvertCOCOToYOLO:
         # Enter directory to read JSON file
         data = json.load(open(self.json_path))
 
-        img_id_to_yolo_annotation = {}
+        if self.keep_duplicates: img_id_to_yolo_annotation = defaultdict(list)
+        else: img_id_to_yolo_annotation = defaultdict(set)
         img_id_to_filename = {}
         img_id_to_dimensions = {}
         for img in data[imgs_key]:
@@ -97,11 +102,13 @@ class ConvertCOCOToYOLO:
             
             content =f"{category_id} {normalised_yolo_bbox[0]} {normalised_yolo_bbox[1]} {normalised_yolo_bbox[2]} {normalised_yolo_bbox[3]}"
 
-            if image_id in img_id_to_yolo_annotation:
-                new_content = img_id_to_yolo_annotation[image_id] + "\n" + content
-                img_id_to_yolo_annotation[image_id] = new_content
-            else:
-                img_id_to_yolo_annotation[image_id] = content
+            # if image_id in img_id_to_yolo_annotation:
+            #     new_content = img_id_to_yolo_annotation[image_id] + "\n" + content
+            #     img_id_to_yolo_annotation[image_id] = new_content
+            # else:
+            #     img_id_to_yolo_annotation[image_id] = content
+            if self.keep_duplicates: img_id_to_yolo_annotation[image_id].append(content)
+            else: img_id_to_yolo_annotation[image_id].add(content)
         
         # Write annotation files for images with annotations
         for image_id, content in img_id_to_yolo_annotation.items():
@@ -110,7 +117,7 @@ class ConvertCOCOToYOLO:
             filepath = Path(self.labels_output_path) / filename
             
             with open(filepath, 'w') as output_file:
-                output_file.write(content)
+                output_file.write("\n".join(content) + "\n")
         
         # Write annotation files for images with NO annotations
         if not self.remove_empty:
@@ -150,12 +157,13 @@ class ConvertCOCOToYOLO:
         self.copy_images()
         print("Success!")
 
-def main(img_folder, json_path, output_path, remove_empty):
+def main(args):
     ConvertCOCOToYOLO(
-        img_folder=img_folder,
-        json_path=json_path,
-        output_path=output_path,
-        remove_empty=remove_empty
+        img_folder=args.img_folder,
+        json_path=args.json_path,
+        output_path=args.output_path,
+        remove_empty=args.remove_empty,
+        keep_duplicates=args.keep_duplicates
     ).run()
 
 if __name__ == "__main__":
@@ -164,7 +172,8 @@ if __name__ == "__main__":
     parser.add_argument("json_path", help="Path to the COCO JSON file")
     parser.add_argument("output_path", help="Path to the output folder")
     parser.add_argument("--remove-empty", action="store_true", default=False, help="Remove images with no annotations in the YOLO format (default: False)")
+    parser.add_argument("--keep-duplicate-labels", action="store_true", default=False, help="Keep duplicate labels within an image (default: False)")
     args = parser.parse_args()
     print(args)
 
-    main(args.img_folder, args.json_path, args.output_path, args.remove_empty)
+    main(args)
