@@ -102,11 +102,6 @@ class ConvertCOCOToYOLO:
             
             content =f"{category_id} {normalised_yolo_bbox[0]} {normalised_yolo_bbox[1]} {normalised_yolo_bbox[2]} {normalised_yolo_bbox[3]}"
 
-            # if image_id in img_id_to_yolo_annotation:
-            #     new_content = img_id_to_yolo_annotation[image_id] + "\n" + content
-            #     img_id_to_yolo_annotation[image_id] = new_content
-            # else:
-            #     img_id_to_yolo_annotation[image_id] = content
             if self.keep_duplicates: img_id_to_yolo_annotation[image_id].append(content)
             else: img_id_to_yolo_annotation[image_id].add(content)
         
