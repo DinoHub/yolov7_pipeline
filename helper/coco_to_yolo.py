@@ -158,7 +158,7 @@ def main(args):
         json_path=args.json_path,
         output_path=args.output_path,
         remove_empty=args.remove_empty,
-        keep_duplicates=args.keep_duplicates
+        keep_duplicates=args.keep_duplicate_labels
     ).run()
 
 if __name__ == "__main__":
