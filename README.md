@@ -7,7 +7,7 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
   - [Additional Functionalities](#additional-functionalities)
     - [Conversion of Weights (for Inference Branch)](#conversion-of-weights-for-inference-branch)
     - [(Inference) Detection + Tracking with DeepSORT](#inference-detection--tracking-with-deepsort)
-    - [(Testing) F-Beta Evaluation](#testing-f-beta-evaluation)
+    - [(Testing/Evaluating) with pycocotools](#testingevaluating-with-pycocotools)
     - [Helper Scripts](#helper-scripts)
   - [Notes](#notes)
     - [Training](#training)
@@ -69,21 +69,41 @@ To run the script, follow these instructions:
 
 By executing the provided commands, the script will perform object detection and tracking using DeepSORT, either on a video or an image, depending on your chosen input source.
 
-### (Testing) F-Beta Evaluation
+### Testing/Evaluating (with pycocotools)
+`test_coco.py` is a Python script for evaluating models with COCO ground truth annotations. Please follow the instructions below to use it effectively.
 
-The `test_fbeta.py` script enhances the functionality of the current `test.py` script by incorporating f-beta evaluation (f1-score, f2-score) and displaying the f-beta results after the YOLOv7 evaluations in `test.py`.
+#### Prerequisites
 
-This evaluation utilises the [fdet-api repository](https://github.com/yhsmiley/fdet-api/) instead of `pycocotools`.
+Before using `test_coco.py`, ensure the following prerequisites are met:
 
-The script accepts the same parameters as test.py, with the addition of two new parameters:
-- `--gt-file`: Specifies the JSON file containing the ground truth or true values for your test set. The default value is set to `gt.json`.
-- `--results-csv`: Specifies the output CSV file for storing the f-beta results. The default value is set to `None`.
+1. **`fdet-api`**: Download [fdet-api](https://github.com/yhsmiley/fdet-api/blob/master/PythonAPI/pycocotools/cocoeval.py).
 
-To perform the f-beta evaluation, you need to provide the `--gt-file` parameter when executing `test_fbeta.py`. The `--results-csv` parameter is optional and aids in consolidating the f-beta results when conducting multiple evaluations.
+1. **COCO JSON File**: Provide a COCO JSON file containing ground truth annotations in the same folder as your image dataset. JSON image file names should match image file names.
 
-Here's an example usage:
+1. **Weight Reparameterization**: Note that you have to reparameterize the weights before testing (refer to [Reparameterization](#reparameterization-to-convert-weights-for-use-in-inference-branch).
+
+1. **COCO Annotation Format**: Annotations (e.g., `cat_id`, `ann_id`, `image_id`, etc.) must adhere to standard COCO format (start from 1).
+
+#### Key Parameters
+
+- `--cfg`: Path to the model's .yaml file (eg. cfg/deploy/yolov7.yaml). Note that you should use the `deploy` cfg and not `training`.
+
+- `--data`: Path to the data file (eg. data/coco.yaml). This YAML file will contain the path to the COCO JSON file.
+
+- `--save-json`: Save a cocoapi-compatible JSON results file and evaluate using pycocotools (Default: False).
+
+- `--evaluate-fbeta`: Enable evaluation of F1 and F2 scores (the default evaluates mAP only) (Default: False).
+
+- `--results-csv`: Path to an output CSV file to save F-beta results (Default: None).
+
+For advanced usage, consult the script's documentation or comments.
+
+#### Example Usage
+
+Here's an example command to run the test script:
+
 ```bash
-python test.py --data data/coco.yaml --img 640 --batch 32 --conf 0.001 --iou 0.65 --task 'test' --save-json --gt-file gt.json --results-csv ./results.csv --device 0 --weights yolov7.pt
+python test_coco.py --weights yolov7.pt --cfg cfg/deploy/yolov7.yaml --data data/coco.yaml --batch-size 32 --img-size 640 --conf-thres 0.001 --iou-thres 0.65 --task test --device 0 --save-txt --save-json --results-csv results.csv --evaluate-fbeta
 ```
 
 ### Helper Scripts
