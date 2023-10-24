@@ -1,184 +1,287 @@
-# python tiling.py /path/to/yolo-format/folder /path/to/output/folder
-# eg. python tiling.py /home/wenyi/DATA/synthetics/DOTA_yolo_small_vehs_only/ /home/wenyi/DATA/synthetics/DOTA_yolo_small_vehs_only_TILED/
-
+# usage: python tiling.py /path/to/dataset /path/to/output --negative-samples-path /path/to/ns/output --size 640
 import argparse
-import os
 from pathlib import Path
-
-import numpy as np
 import pandas as pd
 from PIL import Image
 from shapely.geometry import Polygon
 
-# Takes a Path object as input and creates a directory at the specified path if it doesn't already exist.
-# The function handles potential errors and prints appropriate error messages in case of failure.
-def create_directory(path):
-  try:
-    path.mkdir(parents=True, exist_ok=True)
-  except FileNotFoundError:
-    print(f"Specified directory {path} not found. Unable to create folder.")
-  except PermissionError:
-    print(f"Permission denied. Unable to create folder {path}.")
-      
-def create_tiles(img_filename, img, img_name, img_ext, op_imgs_path, op_labels_path, slice_size, boxes, negative_samples_path):
-  imr = np.array(img, dtype=np.uint8)
-  height, width = img.height, img.width
+class Tiler:
+  def __init__(self,
+               dataset_directory: str,
+               output_folder: str,
+               negative_samples_path: str = None,
+               slice_size: int = 640,
+               no_padding: bool = False):
+    """
+    Initialize the Tiler class with input parameters.
 
-  # Create tiles and find intersection with bounding boxes for each tile
-  for i in range((height // slice_size)):
-    for j in range((width // slice_size)):
-      x1 = j*slice_size
-      y1 = height - (i*slice_size)
-      x2 = ((j+1)*slice_size) - 1
-      y2 = (height - (i+1)*slice_size) + 1
+    :param dataset_directory: Path to the dataset directory. Required.
+    :param output_folder: Path to the target output folder. Required.
+    :param negative_samples_path: Path to where negative samples should be saved. Default: None.
+    :param slice_size: Slice size. Default: 640.
+    :param no_padding: Do not pad images, tiles smaller than indicated size will be discarded. Default: False.
+    """
+    self.dataset_directory = Path(dataset_directory)
+    self.output_folder = Path(output_folder)
+    self.negative_samples_path = Path(negative_samples_path) if negative_samples_path else None
+    self.slice_size = slice_size
+    self.no_padding = no_padding
 
-      pol = Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
-      no_annotations = True
-      slice_labels = []
+  def create_directory(self, path):
+    """
+    Create a directory at the specified path, handling exceptions.
 
-      for box in boxes:
-        if pol.intersects(box[1]):
-          inter = pol.intersection(box[1])    
-          
-          if no_annotations:
-            sliced = imr[i*slice_size:(i+1)*slice_size, j*slice_size:(j+1)*slice_size]
-            sliced_im = Image.fromarray(sliced)
-            rgb_im = sliced_im.convert('RGB')
-            slice_path = str(op_imgs_path / f'{img_name}_{i}_{j}{img_ext}')
-            
-            slice_labels_path = str(op_labels_path / f'{img_name}_{i}_{j}.txt')
-            
-            rgb_im.save(slice_path)
-            no_annotations = False          
-          
-          # Get the smallest polygon (with sides parallel to the coordinate axes) that contains the intersection
-          new_box = inter.envelope 
-          
-          # Get central point for the new bounding box 
-          centre = new_box.centroid
-          
-          # Get coordinates of polygon vertices
-          try:
-            x, y = new_box.exterior.coords.xy
-          except AttributeError:
-            print(f"AttributeError in: {img_filename}")
-            continue
-          
-          # Get bounding box width and height normalized to slice size
-          new_width = (max(x) - min(x)) / slice_size
-          new_height = (max(y) - min(y)) / slice_size
-          
-          # We have to normalize central x and invert y for yolo format
-          new_x = (centre.coords.xy[0][0] - x1) / slice_size
-          new_y = (y1 - centre.coords.xy[1][0]) / slice_size
-
-          slice_labels.append([box[0], new_x, new_y, new_width, new_height])
-      
-      # Save txt with labels for the current tile
-      if len(slice_labels) > 0:
-        slice_df = pd.DataFrame(slice_labels, columns=['class', 'x1', 'y1', 'w', 'h'])
-        slice_df.to_csv(slice_labels_path, sep=' ', index=False, header=False, float_format='%.6f')
-      
-      # If negative_samples_path is indicated & there are no bounding boxes intersecting the current tile, save this tile to a separate folder
-      if negative_samples_path and no_annotations:
-        sliced = imr[i*slice_size:(i+1)*slice_size, j*slice_size:(j+1)*slice_size]
-        sliced_im = Image.fromarray(sliced)
-        rgb_im = sliced_im.convert('RGB')
-
-        # Save the image file and generate the label file
-        slice_path = Path(negative_samples_path) / 'images' / f'{img_name}_{i}_{j}{img_ext}'
-        rgb_im.save(str(slice_path))
-        empty_label_path = Path(negative_samples_path) / 'labels' / f'{img_name}_{i}_{j}.txt'
-        with open(str(empty_label_path), 'w') as f:
-          pass
-
-        no_annotations = False
-
-def tile_images(dir, op_dir, negative_samples_path, slice_size):
-  # Create necessary folders
-  img_path = dir / "images"
-  labels_path = dir / "labels"
-  op_imgs_path = op_dir / "images"
-  op_labels_path = op_dir / "labels"
-  create_directory(op_imgs_path)
-  create_directory(op_labels_path)
-  
-  if negative_samples_path:
-    create_directory(negative_samples_path / "images")
-    create_directory(negative_samples_path / "labels")
-
-  # Tile all images in a loop
-  total_imgs = len(list(img_path.iterdir()))
-  for t, img_filename in enumerate(img_path.iterdir()):
-    if t % 100 == 0:
-      print(f"=== {t} out of {total_imgs}")
-
-    img_name, img_ext = img_filename.stem, img_filename.suffix
+    :param path: Path to the directory to create.
+    """
     try:
-      img = Image.open(img_filename)
-    except Image.DecompressionBombError:
-      print(f"DecompressionBombError. Skipping image...")
-      continue
+      path.mkdir(parents=True, exist_ok=True)
+    except FileNotFoundError:
+      print(f"Specified directory {path} not found. Unable to create folder.")
+    except PermissionError:
+      print(f"Permission denied. Unable to create folder {path}.")
 
-    labels = pd.read_csv(labels_path / f'{img_name}.txt', sep=' ', names=['class', 'x1', 'y1', 'w', 'h'])
+  def calculate_num_slices(self, width, height):
+    """
+    Calculate the number of vertical and horizontal slices based on the given width and height.
+
+    :param width: Width of the image.
+    :param height: Height of the image.
+    :return: A tuple containing the number of vertical and horizontal slices.
+    """
+    num_vertical_slices = (height + self.slice_size - 1) // self.slice_size
+    num_horizontal_slices = (width + self.slice_size - 1) // self.slice_size
+
+    if self.no_padding:
+      num_vertical_slices -= 1
+      num_horizontal_slices -= 1
     
-    # # we need to rescale coordinates from 0-1 to real image height and width
-    labels[['x1', 'w']] = labels[['x1', 'w']] * img.width
-    labels[['y1', 'h']] = labels[['y1', 'h']] * img.height
+    return num_vertical_slices, num_horizontal_slices
+
+  def create_tile_polygon_and_image(self, img, num_row, num_col, width, height):
+    """
+    Create a polygon and cropped image for a specific tile within the image.
+
+    :param img: The source image.
+    :param num_row: Row index of the tile.
+    :param num_col: Column index of the tile.
+    :param width: Width of the image.
+    :param height: Height of the image.
+    :return: A tuple containing the polygon and the cropped image for the tile.
+    """
+    x1 = num_col * self.slice_size
+    y1 = num_row * self.slice_size
+    x2 = x1 + self.slice_size
+    y2 = y1 + self.slice_size
+    crop_pol = Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)]) # cropped polygon should always be slice_size x slice_size
+    cropped_img = img.crop(crop_pol.bounds)
+
+    # Check if tile requires padding
+    if width < x2:
+      x2 = width
+    if height < y2:
+      y2 = height
+    pol = Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])
+
+    return pol, cropped_img
+
+  def save_labels(self, slice_labels, slice_labels_path):
+    """
+    Save a list of labels to a file with the specified path.
+
+    :param slice_labels: A list of labels to be saved.
+    :param slice_labels_path: The path where the labels should be saved.
+    """
+    if len(slice_labels) > 0:
+      slice_df = pd.DataFrame(slice_labels, columns=['class', 'x1', 'y1', 'w', 'h'])
+      slice_df.to_csv(slice_labels_path, sep=' ', index=False, header=False, float_format='%.6f')
+
+  def save_negative_samples(self, cropped_img, img_filename, label_filename):
+    """
+    Save a negative sample (image and label) to the specified path.
+
+    :param cropped_img: The cropped image to be saved.
+    :param img_filename: The filename for the image.
+    :param label_filename: The filename for the label.
+    """
+    img_path = self.negative_samples_path / 'images' / img_filename
+    label_path = self.negative_samples_path / 'labels' / label_filename
+    cropped_img.save(str(img_path))
+    with open(str(label_path), 'w') as f:
+      pass
+
+  def create_tiles(self, 
+                   img_filename: str,
+                   img: Image.Image,
+                   op_imgs_path: Path,
+                   op_labels_path: Path,
+                   boxes: list):
+    """
+    Create tiles from a single image and generate labels for each tile.
+
+    :param img_filename: Filename of the image being processed.
+    :param img: The image object.
+    :param op_imgs_path: Output path for images.
+    :param op_labels_path: Output path for labels.
+    :param boxes: List of bounding boxes for the image.
+    """
+    img_name, img_ext = img_filename.stem, img_filename.suffix
+    height, width = img.height, img.width
+
+    num_vertical_slices, num_horizontal_slices = self.calculate_num_slices(width, height)
+
+    # Create tiles and find intersection with bounding boxes for each tile
+    for num_row in range(num_vertical_slices):
+      for num_col in range(num_horizontal_slices):
+        pol, cropped_img = self.create_tile_polygon_and_image(img, num_row, num_col, width, height)
+
+        slice_path = str(op_imgs_path / f'{img_name}_{num_row}_{num_col}{img_ext}')
+        slice_labels_path = str(op_labels_path / f'{img_name}_{num_row}_{num_col}.txt')
+
+        no_annotations = True
+        slice_labels = []
+        for box in boxes:
+          if pol.intersects(box[1]):
+            # Save image
+            if no_annotations:
+              cropped_img.save(slice_path)
+              no_annotations = False
+
+            # Get the smallest polygon (with sides parallel to the coordinate axes) that contains the intersection
+            inter = pol.intersection(box[1])
+            new_box = inter.envelope 
+            
+            # Get coordinates of polygon vertices
+            try:
+              x, y = new_box.exterior.coords.xy
+            except AttributeError:
+              print(f"AttributeError in: {img_filename}")
+              continue
+            
+            # Normalize width and height for yolo format
+            new_width = (max(x) - min(x)) / self.slice_size
+            new_height = (max(y) - min(y)) / self.slice_size
+            
+            # Get central point for the new bounding box and normalize
+            centre = new_box.centroid
+            new_x = (centre.x - (num_col * self.slice_size)) / self.slice_size
+            new_y = (centre.y - (num_row * self.slice_size)) / self.slice_size
+
+            slice_labels.append([box[0], new_x, new_y, new_width, new_height])
+        
+        # Save txt with labels for the current tile
+        self.save_labels(slice_labels, slice_labels_path)
+
+        # If negative_samples_path is indicated & there are no bounding boxes intersecting the current tile, save this tile to a separate folder
+        if self.negative_samples_path and no_annotations:
+          self.save_negative_samples(cropped_img, f'{img_name}_{num_row}_{num_col}{img_ext}', f'{img_name}_{num_row}_{num_col}.txt')
+
+  def tile_images(self):
+    """
+    Tile all images in the dataset_directory and generate labels for the tiles.
+    Sets up the folder structure and iterates through images.
+    """
+    # Create necessary folders
+    img_path = self.dataset_directory / "images"
+    labels_path = self.dataset_directory / "labels"
+    op_imgs_path = self.output_folder / "images"
+    op_labels_path = self.output_folder / "labels"
+    self.create_directory(op_imgs_path)
+    self.create_directory(op_labels_path)
     
-    boxes = []
-    # Convert bounding boxes to shapely polygons. We need to invert Y and find polygon vertices from center points
-    for row in labels.iterrows():
-      x1 = row[1]['x1'] - row[1]['w'] / 2
-      y1 = (img.height - row[1]['y1']) - row[1]['h'] / 2
-      x2 = row[1]['x1'] + row[1]['w'] / 2
-      y2 = (img.height - row[1]['y1']) + row[1]['h'] / 2
+    if self.negative_samples_path:
+      self.create_directory(self.negative_samples_path / "images")
+      self.create_directory(self.negative_samples_path / "labels")
 
-      boxes.append((int(row[1]['class']), Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])))
+    # Tile all images in a loop
+    total_imgs = len(list(img_path.iterdir()))
+    for t, img_filename in enumerate(img_path.iterdir()):
+      if t % 100 == 0:
+        print(f"=== {t} out of {total_imgs}")
+
+      try:
+        img = Image.open(img_filename)
+      except Image.DecompressionBombError:
+        print(f"DecompressionBombError. Skipping image...")
+        continue
+
+      try:
+        label_filepath = labels_path / f'{img_filename.stem}.txt'
+        labels = pd.read_csv(label_filepath, sep=' ', names=['class', 'x1', 'y1', 'w', 'h'])
+        
+        # We need to rescale coordinates from 0-1 to real image height and width
+        labels[['x1', 'w']] = labels[['x1', 'w']] * img.width
+        labels[['y1', 'h']] = labels[['y1', 'h']] * img.height
+        
+        boxes = []
+        # Convert bounding boxes to shapely polygons. We need to invert Y and find polygon vertices from center points
+        for row in labels.iterrows():
+          x1 = row[1]['x1'] - row[1]['w'] / 2
+          y1 = (row[1]['y1']) - row[1]['h'] / 2
+          x2 = row[1]['x1'] + row[1]['w'] / 2
+          y2 = (row[1]['y1']) + row[1]['h'] / 2
+
+          boxes.append((int(row[1]['class']), Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2)])))
+      except FileNotFoundError:
+        print(f"WARNING: Could not find label {label_filepath}. Assuming image has no annotations.")
+      
+      self.create_tiles(img_filename, img, op_imgs_path, op_labels_path, boxes)
+
+  def run(self):
+    """
+    The main function for the tiling process for a given dataset.
+
+    Folder Structure:
+    There are two possible folder structures supported:
+
+    1. Dataset directory contains 'images' and 'labels' subdirectories.
+       - dataset_directory
+         ├── images
+         └── labels
+
+    2. Dataset directory contains multiple subfolders, each with 'images' and 'labels' subdirectories.
+       - dataset_directory
+         ├── folder_1
+         │   └── images
+         │   └── labels
+         ├── folder_2
+         │   └── images
+         │   └── labels
+         └── ...
+
+    In the first case, all images in 'images' are tiled into the output folder.
+    In the second case, each subfolder is processed separately, creating subfolders in the output for each.
+
+    The tiling process will create tiles from images and generate labels for each tile.
+
+    """
+    print(f"Slice size: {self.slice_size}")
+    output_path = self.output_folder
+
+    # Folder Structure 1
+    if (self.dataset_directory / "images").is_dir() and (self.dataset_directory / "labels").is_dir():
+      print(f"Tiling '{self.dataset_directory}' into '{output_path}'")
+      self.tile_images()
+
+    # Folder Structure 2 (subfolders)
+    else:
+      sub_folders = [x for x in self.dataset_directory.iterdir() if x.is_dir()]
+      for i, sub_folder in enumerate(sub_folders):
+        img_subfolder = (sub_folder / "images")
+        label_subfolder = (sub_folder / "labels")
+
+        if img_subfolder.is_dir() and label_subfolder.is_dir():
+          op_folder = output_path / sub_folder.name
+
+          # Start tiling for subfolder
+          print(f"{i + 1} of {len(sub_folders)}: Tiling '{sub_folder}' into '{op_folder}'")
+          self.dataset_directory = sub_folder
+          self.output_folder = op_folder
+          self.tile_images()
+
+        else:
+          print(f"Cannot find 'images' or 'labels' folder in {sub_folder}. Skipping tiling this folder...")
     
-    create_tiles(img_filename, img, img_name, img_ext, op_imgs_path, op_labels_path, slice_size, boxes, negative_samples_path)
-
-def main(dataset_directory, output_folder, negative_samples_path, size):
-  # Printing config
-  print(f"Slice size: {size}")
-
-  output_path = Path(output_folder)
-
-  # Folder Structure 1:
-    # dataset_directory
-    # ├── images
-    # └── labels
-  if (Path(dataset_directory) / "images").is_dir() and (Path(dataset_directory) / "labels").is_dir():
-    # Start tiling
-    print(f"Tiling '{dataset_directory}' into '{output_path}'")
-    tile_images(Path(dataset_directory), output_path, negative_samples_path, size)
-
-  # Folder Structure 2 (subfolders):
-    # dataset_directory
-    # ├── folder_1
-    # │   └── images
-    # │   └── labels
-    # ├── folder_2
-    # │   └── images
-    # │   └── labels
-    # └── ...
-  else:
-    sub_folders = [x for x in Path(dataset_directory).iterdir() if x.is_dir()]
-    for i, sub_folder in enumerate(sub_folders):
-      img_subfolder = (sub_folder / "images")
-      label_subfolder = (sub_folder / "labels")
-
-      if img_subfolder.is_dir() and label_subfolder.is_dir():
-        op_folder = output_path / sub_folder.name
-
-        # Start tiling for subfolder
-        print(f"{i + 1} of {len(sub_folders)}: Tiling '{sub_folder}' into '{op_folder}'")
-        tile_images(sub_folder, op_folder, negative_samples_path, size)
-
-      else:
-        print(f"Cannot find 'images' or 'labels' folder in {sub_folder}. Skipping tiling this folder...")
-  
-  print("Completed")
+    print(f"Completed. Saved into {str(output_path)}.")
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
@@ -186,6 +289,8 @@ if __name__ == '__main__':
   parser.add_argument('output_folder', type=Path, help='path to the target output folder')
   parser.add_argument('--negative-samples-path', type=Path, help='path to where the negative samples should be saved')
   parser.add_argument('--size', type=int, default=640, help='slice size (default: 640)')
+  parser.add_argument('--no-padding', action='store_true', help='do not pad images, tiles smaller than indicated size will be discarded')
   args = parser.parse_args()
 
-  main(args.dataset_directory, args.output_folder, args.negative_samples_path, args.size)
+  tiler = Tiler(args.dataset_directory, args.output_folder, args.negative_samples_path, args.size, args.no_padding)
+  tiler.run()
