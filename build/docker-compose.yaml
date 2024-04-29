@@ -1,0 +1,26 @@
+version: '3.4'
+
+services:
+  yolov7_inference:
+    image: yolov7_inference:0.0.1
+    build:
+      context: ../
+      dockerfile: build/Dockerfile
+    stdin_open: true
+    tty: true
+    ulimits:
+      memlock: -1
+    shm_size: 32gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    volumes:
+      - ../src:/src
+      - ../data:/data
+      - ../models:/models
+    environment:
+      - DISPLAY=:0
