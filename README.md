@@ -8,31 +8,97 @@ Last "merge" date: 7th Sept 2022
 
 - YOLOv7 can be used as a package, with minimal requirements for inference only
 
-## Using YOLOv7 as a package for inference
+## Using YOLOv7 as a Package for Inference
 
-- clone YOLOv7 repository (need not be in same folder as main project) and checkout `inference` branch
-- download desired weights using arguments to bash script
-```
-cd yolov7/weights
-./get_weights.sh yolov7 yolov7-e6
-```
-- make sure the requirements for YOLOv7 are installed
-- in the main project folder, install YOLOv7 as a package (takes some time to build)
-```
-python3 -m pip install --no-cache-dir /path/to/yolov7
-```
-OR as an editable package (if you need to make changes to the code, faster to build)
-```
-python3 -m pip install -e /path/to/yolov7
-```
-- import the YOLOv7 wrapper class for inference (refer to `scripts/inference.py` for example usage)
-```
-from yolov7.yolov7 import YOLOv7
-```
+To use YOLOv7 as a package for inference, follow these steps:
 
-## TODO
+### Setting up Using Docker Compose (Recommended)
 
-- [x] figure out memory leak issue
+Using Docker Compose is recommended for setting up the environment. Follow these steps:
+
+1. **Clone the Repository**:
+    Clone the YOLOv7 repository. It doesn't need to be in the same folder as your main project. Checkout the `inference` branch.
+
+    ```bash
+    git clone https://github.com/DinoHub/yolov7_pipeline.git
+    git checkout inference
+    ```
+
+1. **Edit Configurations**:
+
+    Edit configurations in `build/docker-compose.yaml` and `build/.env` accordingly. Best practice would be to have a `/data` folder for data (images/videos/etc.) and a `/models` folder for model related items, e.g., weights or cfgs.
+
+1. **Build and Run Docker Container**:
+
+    Build the Docker container and start the Docker Compose:
+
+    ```bash
+    cd build
+    docker-compose up
+    ```
+
+1. **Execute Scripts**:
+
+    Once the container is built, open another terminal and enter the container to execute your scripts. Replace `yolov7_inference` with your image name if you've changed it.
+
+    ```bash
+    cd build
+    docker-compose exec yolov7_inference bash
+    ```
+
+    You can now run inference scripts inside the container. Refer to the [Running YOLOv7 for Inference](#running-yolov7-for-inference) section for details.
+
+### Manual Set Up
+
+If you prefer manual setup, follow these steps:
+
+1. **Clone the Repository**:
+    Clone the YOLOv7 repository. It doesn't need to be in the same folder as your main project. Checkout the `inference` branch.
+
+    ```bash
+    git clone https://github.com/DinoHub/yolov7_pipeline.git
+    git checkout inference
+    ```
+
+1. **Install the requirements for YOLOv7**:
+
+    ```bash
+    pip install -r build/requirements.txt
+    ```
+
+1. **Install YOLOv7 Package**:
+
+    Navigate to your project folder and install YOLOv7 as a package.
+
+    ```
+    python3 -m pip install --no-cache-dir /path/to/yolov7
+    ```
+
+    Alternatively, use an editable package for faster builds:
+
+    ```
+    python3 -m pip install -e /path/to/yolov7
+    ```
+
+    **Note**: `/path/to/yolov7` should be the `/src` folder of this repo
+
+## Running YOLOv7 for Inference
+1. **Download Weights**:
+
+    Use the provided script to download desired weights:
+
+    ```bash
+    cd yolov7/weights
+    ./get_weights.sh yolov7 yolov7-e6
+    ```
+
+1. **Import YOLOv7 Wrapper Class**:
+
+    In your code, import the YOLOv7 wrapper class for inference. Alternatively, refer to `scripts/inference.py` for example usage:
+
+    ```bash
+    from yolov7.yolov7 import YOLOv7
+    ```
 
 # Official YOLOv7
 
