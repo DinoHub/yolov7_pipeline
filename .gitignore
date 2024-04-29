@@ -1,179 +1,183 @@
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
-*.heic
-*.JPG
-*.JPEG
-*.PNG
-*.BMP
-*.TIF
-*.TIFF
-*.HEIC
-*.mp4
-*.mov
-*.MOV
-*.avi
-*.data
-*.json
-*.cfg
-!setup.cfg
-!cfg/yolov3*.cfg
+src/**/*.jpg
+src/**/*.jpeg
+src/**/*.png
+src/**/*.bmp
+src/**/*.tif
+src/**/*.tiff
+src/**/*.heic
+src/**/*.JPG
+src/**/*.JPEG
+src/**/*.PNG
+src/**/*.BMP
+src/**/*.TIF
+src/**/*.TIFF
+src/**/*.HEIC
+src/**/*.mp4
+src/**/*.mov
+src/**/*.MOV
+src/**/*.avi
+src/**/*.data
+src/**/*.json
+src/**/*.cfg
+!src/setup.cfg
+!src/cfg/yolov3*.cfg
 
 storage.googleapis.com
-runs/*
-data/*
-data/images/*
-!data/*.yaml
-!data/hyps
-!data/scripts
-!data/images
-!data/images/zidane.jpg
-!data/images/bus.jpg
-!data/*.sh
+src/runs/*
+src/data/*
+src/data/images/*
+!src/data/*.yaml
+!src/data/hyps
+!src/data/scripts
+!src/data/images
+!src/data/images/zidane.jpg
+!src/data/images/bus.jpg
+!src/data/*.sh
 
 results*.csv
 
-# Datasets -------------------------------------------------------------------------------------------------------------
-coco/
-coco128/
-VOC/
+# Data & Models --------------------------------------------------------------------------------------------------------
+data/*
+models/*
 
-coco2017labels-segments.zip
-test2017.zip
-train2017.zip
-val2017.zip
+# Datasets -------------------------------------------------------------------------------------------------------------
+src/coco/
+src/coco128/
+src/VOC/
+
+src/coco2017labels-segments.zip
+src/test2017.zip
+src/train2017.zip
+src/val2017.zip
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
 *.m~
 *.mat
-!targets*.mat
+!src/targets*.mat
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
-*.weights
-*.pt
-*.pb
-*.onnx
-*.engine
-*.mlmodel
-*.torchscript
-*.tflite
-*.h5
-*_saved_model/
-*_web_model/
-*_openvino_model/
-darknet53.conv.74
-yolov3-tiny.conv.15
-*.ptl
-*.trt
+src/*.weights
+src/*.pt
+src/*.pb
+src/*.onnx
+src/*.engine
+src/*.mlmodel
+src/*.torchscript
+src/*.tflite
+src/*.h5
+src/*_saved_model/
+src/*_web_model/
+src/*_openvino_model/
+src/darknet53.conv.74
+src/yolov3-tiny.conv.15
+src/*.ptl
+src/*.trt
 
 # GitHub Python GitIgnore ----------------------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+src/__pycache__/
+src/*.py[cod]
+src/*$py.class
 
 # C extensions
-*.so
+src/*.so
 
 # Distribution / packaging
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-/wandb/
-.installed.cfg
-*.egg
+src/.Python
+src/env/
+src/build/
+src/develop-eggs/
+src/dist/
+src/downloads/
+src/eggs/
+src/.eggs/
+src/lib/
+src/lib64/
+src/parts/
+src/sdist/
+src/var/
+src/wheels/
+src/*.egg-info/
+src/wandb/
+src/.installed.cfg
+src/*.egg
 
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+src/*.manifest
+src/*.spec
 
 # Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+src/pip-log.txt
+src/pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
+src/htmlcov/
+src/.tox/
+src/.coverage
+src/.coverage.*
+src/.cache
+src/nosetests.xml
+src/coverage.xml
+src/*.cover
+src/.hypothesis/
 
 # Translations
-*.mo
-*.pot
+src/*.mo
+src/*.pot
 
 # Django stuff:
-*.log
-local_settings.py
+src/*.log
+src/local_settings.py
 
 # Flask stuff:
-instance/
-.webassets-cache
+src/instance/
+src/.webassets-cache
 
 # Scrapy stuff:
-.scrapy
+src/.scrapy
 
 # Sphinx documentation
-docs/_build/
+src/docs/_build/
 
 # PyBuilder
-target/
+src/target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+src/.ipynb_checkpoints
 
 # pyenv
-.python-version
+src/.python-version
 
 # celery beat schedule file
-celerybeat-schedule
+src/celerybeat-schedule
 
 # SageMath parsed files
-*.sage.py
+src/*.sage.py
 
 # dotenv
-.env
+src/.env
 
 # virtualenv
-.venv*
-venv*/
-ENV*/
+src/.venv*
+src/venv*/
+src/ENV*/
 
 # Spyder project settings
-.spyderproject
-.spyproject
+src/.spyderproject
+src/.spyproject
 
 # Rope project settings
-.ropeproject
+src/.ropeproject
 
 # mkdocs documentation
-/site
+src/site
 
 # mypy
-.mypy_cache/
+src/.mypy_cache/
 
 
 # https://github.com/github/gitignore/blob/master/Global/macOS.gitignore -----------------------------------------------
@@ -247,17 +251,4 @@ cmake-build-release/
 # IntelliJ
 out/
 
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Cursive Clojure plugin
-.idea/replstate.xml
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
+# mpeltonen/sbt-idea 
