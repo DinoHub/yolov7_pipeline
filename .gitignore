@@ -36,12 +36,7 @@ src/data/images/*
 !src/data/*.sh
 
 src/*.sh
-!src/train_template.sh
-!src/test_template.sh
-!src/test_coco_template.sh
-!src/detect_template.sh
-!src/detect_track_template.sh
-!src/run_reparam_state_dict_template.sh
+!src/*_template.sh
 src/results*.csv
 # Data and Model -------------------------------------------------------------------------------------------------------
 data/
