@@ -1,56 +1,59 @@
 # Repo-specific GitIgnore ----------------------------------------------------------------------------------------------
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
-*.heic
-*.JPG
-*.JPEG
-*.PNG
-*.BMP
-*.TIF
-*.TIFF
-*.HEIC
-*.mp4
-*.mov
-*.MOV
-*.avi
-*.data
-*.json
-*.cfg
-!setup.cfg
-!cfg/yolov3*.cfg
+src/*.jpg
+src/*.jpeg
+src/*.png
+src/*.bmp
+src/*.tif
+src/*.tiff
+src/*.heic
+src/*.JPG
+src/*.JPEG
+src/*.PNG
+src/*.BMP
+src/*.TIF
+src/*.TIFF
+src/*.HEIC
+src/*.mp4
+src/*.mov
+src/*.MOV
+src/*.avi
+src/*.data
+src/*.json
+src/*.cfg
+!src/setup.cfg
+!src/cfg/yolov3*.cfg
 
 storage.googleapis.com
-runs/*
-data/*
-data/images/*
-!data/*.yaml
-!data/hyps
-!data/scripts
-!data/images
-!data/images/zidane.jpg
-!data/images/bus.jpg
-!data/*.sh
+src/runs/*
+src/data/*
+src/data/images/*
+!src/data/*.yaml
+!src/data/hyps
+!src/data/scripts
+!src/data/images
+!src/data/images/zidane.jpg
+!src/data/images/bus.jpg
+!src/data/*.sh
 
-results*.csv
+src/results*.csv
+# Data and Model -------------------------------------------------------------------------------------------------------
+data/
+models/
 
 # Datasets -------------------------------------------------------------------------------------------------------------
-coco/
-coco128/
-VOC/
+src/coco/
+src/coco128/
+src/VOC/
 
-coco2017labels-segments.zip
-test2017.zip
-train2017.zip
-val2017.zip
+src/coco2017labels-segments.zip
+src/test2017.zip
+src/train2017.zip
+src/val2017.zip
 
 # MATLAB GitIgnore -----------------------------------------------------------------------------------------------------
 *.m~
 *.mat
-!targets*.mat
+!src/targets*.mat
 
 # Neural Network weights -----------------------------------------------------------------------------------------------
 *.weights
@@ -72,107 +75,107 @@ yolov3-tiny.conv.15
 
 # GitHub Python GitIgnore ----------------------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+src/__pycache__/
+src/*.py[cod]
+src/*$py.class
 
 # C extensions
-*.so
+src/*.so
 
 # Distribution / packaging
-.Python
-env/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-/wandb/
-.installed.cfg
-*.egg
+src/.Python
+src/env/
+src/develop-eggs/
+src/dist/
+src/downloads/
+src/eggs/
+src/.eggs/
+src/lib/
+src/lib64/
+src/parts/
+src/sdist/
+src/var/
+src/wheels/
+src/*.egg-info/
+src/wandb/
+src/.installed.cfg
+src/*.egg
 
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+src/*.manifest
+src/*.spec
 
 # Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+src/pip-log.txt
+src/pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
+src/htmlcov/
+src/.tox/
+src/.coverage
+src/.coverage.*
+src/.cache
+src/nosetests.xml
+src/coverage.xml
+src/*.cover
+src/.hypothesis/
 
 # Translations
-*.mo
-*.pot
+src/*.mo
+src/*.pot
 
 # Django stuff:
-*.log
-local_settings.py
+src/*.log
+src/local_settings.py
 
 # Flask stuff:
-instance/
-.webassets-cache
+src/instance/
+src/.webassets-cache
 
 # Scrapy stuff:
-.scrapy
+src/.scrapy
 
 # Sphinx documentation
-docs/_build/
+src/docs/_build/
 
 # PyBuilder
-target/
+src/target/
 
 # Jupyter Notebook
-.ipynb_checkpoints
+src/.ipynb_checkpoints
 
 # pyenv
-.python-version
+src/.python-version
 
 # celery beat schedule file
-celerybeat-schedule
+src/celerybeat-schedule
 
 # SageMath parsed files
-*.sage.py
+src/*.sage.py
 
 # dotenv
-.env
+src/.env
 
 # virtualenv
-.venv*
-venv*/
-ENV*/
+src/.venv*
+src/venv*/
+src/ENV*/
 
 # Spyder project settings
-.spyderproject
-.spyproject
+src/.spyderproject
+src/.spyproject
 
 # Rope project settings
-.ropeproject
+src/.ropeproject
 
 # mkdocs documentation
-/site
+src/site
 
 # mypy
-.mypy_cache/
+src/.mypy_cache/
 
 
 # https://github.com/github/gitignore/blob/master/Global/macOS.gitignore -----------------------------------------------
@@ -211,52 +214,52 @@ Temporary Items
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff:
-.idea/*
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/dictionaries
-.html  # Bokeh Plots
-.pg  # TensorFlow Frozen Graphs
-.avi # videos
+src/.idea/*
+src/.idea/**/workspace.xml
+src/.idea/**/tasks.xml
+src/.idea/dictionaries
+src/.html  # Bokeh Plots
+src/.pg  # TensorFlow Frozen Graphs
+src/.avi # videos
 
 # Sensitive or high-churn files:
-.idea/**/dataSources/
-.idea/**/dataSources.ids
-.idea/**/dataSources.local.xml
-.idea/**/sqlDataSources.xml
-.idea/**/dynamic.xml
-.idea/**/uiDesigner.xml
+src/.idea/**/dataSources/
+src/.idea/**/dataSources.ids
+src/.idea/**/dataSources.local.xml
+src/.idea/**/sqlDataSources.xml
+src/.idea/**/dynamic.xml
+src/.idea/**/uiDesigner.xml
 
 # Gradle:
-.idea/**/gradle.xml
-.idea/**/libraries
+src/.idea/**/gradle.xml
+src/.idea/**/libraries
 
 # CMake
-cmake-build-debug/
-cmake-build-release/
+src/cmake-build-debug/
+src/cmake-build-release/
 
 # Mongo Explorer plugin:
-.idea/**/mongoSettings.xml
+src/.idea/**/mongoSettings.xml
 
 ## File-based project format:
-*.iws
+src/*.iws
 
 ## Plugin-specific files:
 
 # IntelliJ
-out/
+src/out/
 
 # mpeltonen/sbt-idea plugin
-.idea_modules/
+src/.idea_modules/
 
 # JIRA plugin
-atlassian-ide-plugin.xml
+src/atlassian-ide-plugin.xml
 
 # Cursive Clojure plugin
-.idea/replstate.xml
+src/.idea/replstate.xml
 
 # Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
+src/com_crashlytics_export_strings.xml
+src/crashlytics.properties
+src/crashlytics-build.properties
+src/fabric.properties
