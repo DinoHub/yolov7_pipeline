@@ -48,7 +48,6 @@ data/
 models/
 
 # Helper Functions -----------------------------------------------------------------------------------------------------
-src/helper/__pycache__
 src/helper/*.sh
 !src/helper/run_resize_images_template.sh
 !src/helper/run_coco_to_yolo.sh
@@ -89,6 +88,8 @@ yolov3-tiny.conv.15
 # GitHub Python GitIgnore ----------------------------------------------------------------------------------------------
 # Byte-compiled / optimized / DLL files
 src/__pycache__/
+src/helper/__pycache__
+src/utils/__pycache__
 src/*.py[cod]
 src/*$py.class
 
