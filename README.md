@@ -6,7 +6,7 @@ The `inference` branch transforms YOLOv7 into a **package** for easy integration
 
 **Important Note**: You need to use the `main` branch to **reparameterize your weights** before passing them into `inference` branch for inference.
 
-Last "merge" date: 17th Jan 2023
+Last "merge" date: 30th Apr 2024
 
 # Table of Contents
 - [Setting Up (using Docker Compose)](#setting-up-using-docker-compose-recommended)
