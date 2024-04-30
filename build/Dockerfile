@@ -15,6 +15,7 @@ RUN apt-get install --no-install-recommends -y \
     software-properties-common \
     build-essential \
     libgl1-mesa-glx libgl1-mesa-dev \
+    libsm6 \
     vim nano ffmpeg
 
 RUN apt-get clean && rm -rf /tmp/* /var/tmp/* /var/lib/apt/lists/* && apt-get -y autoremove

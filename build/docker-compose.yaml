@@ -22,5 +22,8 @@ services:
       - ../src:/src
       - ../data:/data
       - ../models:/models
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.Xauthority:/root/.Xauthority
     environment:
-      - DISPLAY=:0
+      - DISPLAY=$DISPLAY
+    network_mode: "host"
