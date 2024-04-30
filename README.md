@@ -1,6 +1,6 @@
 # YOLOv7 Pipeline (Main Branch)
 
-This `main` branch provides `user-friendly enhancements` to the [**Official YOLOv7 Repository**](https://github.com/WongKinYiu/yolov7), including `helper scripts`. It supports training, detection, testing, and weight reparameterization.
+This `main` branch provides **user-friendly enhancements** to the [**Official YOLOv7 Repository**](https://github.com/WongKinYiu/yolov7), including **helper scripts**. It supports training, detection, testing, and weight reparameterization.
 
 The `inference` branch transforms YOLOv7 into a **package** for easy integration with projects. It introduces **SAHI and tracking features** for enhanced model capabilities. 
 
@@ -70,7 +70,7 @@ Using Docker Compose is recommended for setting up the environment. Follow these
 
 - Alternatively, you can edit the `weights`, `save_path`, and `cfg` parameters in the provided bash script and run it:
     ```bash
-    bash run_reparam_state_dict.sh
+    bash run_reparam_state_dict_template.sh
     ```
     **Note: Ensure you modify the `nc` value in the `yaml` files to match the desired number of classes.**
 
