@@ -35,10 +35,23 @@ src/data/images/*
 !src/data/images/bus.jpg
 !src/data/*.sh
 
+src/*.sh
+!src/train_template.sh
+!src/test_template.sh
+!src/test_coco_template.sh
+!src/detect_template.sh
+!src/detect_track_template.sh
+!src/run_reparam_state_dict_template.sh
 src/results*.csv
 # Data and Model -------------------------------------------------------------------------------------------------------
 data/
 models/
+
+# Helper Functions -----------------------------------------------------------------------------------------------------
+src/helper/__pycache__
+src/helper/*.sh
+!src/helper/run_resize_images_template.sh
+!src/helper/run_coco_to_yolo.sh
 
 # Datasets -------------------------------------------------------------------------------------------------------------
 src/coco/
