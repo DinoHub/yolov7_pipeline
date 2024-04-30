@@ -44,8 +44,7 @@ models/
 
 # Helper Functions -----------------------------------------------------------------------------------------------------
 src/helper/*.sh
-!src/helper/run_resize_images_template.sh
-!src/helper/run_coco_to_yolo.sh
+!src/helper/*_template.sh
 
 # Datasets -------------------------------------------------------------------------------------------------------------
 src/coco/
