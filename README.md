@@ -1,27 +1,55 @@
 # YOLOv7 Pipeline (Main Branch)
 
-This branch closely aligns with the official YOLOv7 repository, with the inclusion of extra functionalities such as helper scripts located in the `helper` folder. If you intend to perform inference using YOLOv7 as a package, please switch to the `inference` branch.
+This `main` branch provides `user-friendly enhancements` to the [**Official YOLOv7 Repository**](https://github.com/WongKinYiu/yolov7), including `helper scripts`. It supports training, detection, testing, and weight reparameterization.
+
+The `inference` branch transforms YOLOv7 into a **package** for easy integration with projects. It introduces **SAHI and tracking features** for enhanced model capabilities. 
+
+**Important Note**: You need to use the `main` branch to **reparameterize your weights** before passing them into `inference` branch for inference.
+
+Last "merge" date: 17th Jan 2023
 
 # Table of Contents
-- [YOLOv7 Pipeline (Main Branch)](#yolov7-pipeline-main-branch)
-  - [Additional Functionalities](#additional-functionalities)
-    - [Conversion of Weights (for Inference Branch)](#conversion-of-weights-for-inference-branch)
-    - [(Inference) Detection + Tracking with DeepSORT](#inference-detection--tracking-with-deepsort)
-    - [(Testing/Evaluating) with pycocotools](#testingevaluating-with-pycocotools)
-    - [Helper Scripts](#helper-scripts)
-  - [Notes](#notes)
-    - [Training](#training)
-- [Official YOLOv7](#official-yolov7)
-  - [Performance](#performance)
-  - [Installation](#installation)
-  - [Testing](#testing)
-  - [Training](#training)
-  - [Transfer learning](#transfer-learning)
+- [Setting Up (using Docker Compose)](#setting-up-using-docker-compose-recommended)
+- [Additional Functionalities](#additional-functionalities)
+    - [Weight reparameterization](#conversion-of-weights-for-inference-branch)
+    - [Detection + tracking with DeepSORT](#inference-detection--tracking-with-deepsort)
+    - [Testing with pycocotools](#testingevaluating-with-pycocotools)
+    - [Other helper scripts](#helper-scripts)
+- [Training Tips](#training-tips)
 
-## Adapted/Forked from WongKinYiu's Repository
+## Setting up Using Docker Compose (Recommended)
 
-- Repository Link: https://github.com/WongKinYiu/yolov7
-- Last "merge" date: 17th Jan 2023
+Using Docker Compose is recommended for setting up the environment. Follow these steps:
+
+1. **Clone the Repository**:
+    Clone the YOLOv7 repository. It doesn't need to be in the same folder as your main project. Checkout the `main` branch.
+
+    ```bash
+    git clone https://github.com/DinoHub/yolov7_pipeline.git
+    git checkout main
+    ```
+
+1. **Edit Configurations**:
+
+    Edit configurations in `build/docker-compose.yaml` and `build/.env` accordingly. Best practice would be to have a `/data` folder for data (images/videos/etc.) and a `/models` folder for model related items, e.g., weights or cfgs.
+
+1. **Build and Run Docker Container**:
+
+    Build the Docker container and start the Docker Compose:
+
+    ```bash
+    cd build
+    docker-compose up
+    ```
+
+1. **Execute Scripts**:
+
+    Once the container is built, open another terminal and enter the container to execute your scripts. Replace `yolov7_main` with your image name if you've changed it.
+
+    ```bash
+    cd build
+    docker-compose exec yolov7_main bash
+    ```
 
 ## Additional Functionalities
 
@@ -48,7 +76,7 @@ This branch closely aligns with the official YOLOv7 repository, with the inclusi
 
 ### (Inference) Detection + Tracking with DeepSORT
 
-Before using the detect_track.py script, it is necessary to install DeepSORT by executing the following command:
+Before using the detect_track.py script, it is necessary that DeepSORT is installed:
 ```bash
 pip install deep-sort-realtime
 ```
@@ -70,6 +98,7 @@ To run the script, follow these instructions:
 By executing the provided commands, the script will perform object detection and tracking using DeepSORT, either on a video or an image, depending on your chosen input source.
 
 ### Testing/Evaluating (with pycocotools)
+
 `test_coco.py` is a Python script for evaluating models with COCO ground truth annotations. Please follow the instructions below to use it effectively.
 
 #### Prerequisites
@@ -110,9 +139,7 @@ python test_coco.py --weights yolov7.pt --cfg cfg/deploy/yolov7.yaml --data data
 
 Within the `helper` folder, you will discover various scripts, including conversion scripts. For detailed information on these helper functions, please refer to the [Helper Function README](https://github.com/DinoHub/yolov7_pipeline/blob/main/helper/README.md).
 
-## Notes
-
-### Training
+## Training Tips
 
 - **Varying training image size:** In YOLOv7, all input training images must have the same size, which is specified using the `--img` parameter in the `train.py` script.
 
