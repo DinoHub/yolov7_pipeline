@@ -1,4 +1,3 @@
-from importlib_resources import files
 from pathlib import Path
 from time import perf_counter
 
@@ -7,8 +6,10 @@ import torch
 
 from yolov7.yolov7 import YOLOv7
 
-
 imgpath = Path('test.jpg')
+weights = "/models/weights/best.pt"
+cfg = "/models/cfg/yolov7.yaml"
+
 if not imgpath.is_file():
     raise AssertionError(f'{str(imgpath)} not found')
 
