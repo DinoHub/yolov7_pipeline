@@ -54,7 +54,7 @@ def initialize_yolov7_model(weights_path, config_path):
         max_batch_size=16,
         half=True,
         same_size=False,
-        conf_thresh=0.6,
+        conf_thresh=0.2,
         trace=False,
         cudnn_benchmark=False,
     )
@@ -113,7 +113,7 @@ def detect_yolov7(yolov7, images):
         output_path = Path(output_folder) / f'{image_paths[idx].stem}_det.jpg'
         cv2.imwrite(str(output_path), frame)
 
-def detect_sahi(yolov7, images, classes):
+def detect_sahi(yolov7, images, image_paths, classes):
     sahi = initialize_sahi_model(yolov7)
 
     torch.cuda.synchronize()
@@ -153,6 +153,7 @@ if __name__ == "__main__":
     image_suffix = ['.jpg', '.jpeg', '.png']
     if input_folder.is_file():
         if input_folder.suffix.lower() in image_suffix:
+            image_paths = [input_folder]
             images = [cv2.imread(str(input_folder))]
         else:
             raise ValueError(f"Unsupported file type: {input_folder}. "
@@ -167,7 +168,7 @@ if __name__ == "__main__":
 
     # Perform detections
     if use_sahi:
-        detect_sahi(yolov7, images, target_classes)
+        detect_sahi(yolov7, images, image_paths, target_classes)
     else:
         detect_yolov7(yolov7, images)
 
